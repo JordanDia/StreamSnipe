@@ -46,7 +46,7 @@ def analyze_chat():
     peaks, _ = find_peaks(derivative, height=7)
 
     # Sort peaks by intensity
-    peak_heights = [(p, derivative[p]) for p in peaks]
+    peak_heights = [(p, derivative[p].item()) for p in peaks]
     peak_heights_sorted = sorted(peak_heights, key=lambda x: x[1], reverse=True)
 
     print("\nTop hype spikes:")
@@ -72,7 +72,7 @@ def analyze_segment(msg_count, start, end):
     peaks, _ = find_peaks(derivative, height=7)
     # Offset peaks by segment start
     peaks = [p + start for p in peaks]
-    peak_heights = [(p, derivative[p - start]) for p in peaks]
+    peak_heights = [(p, derivative[p - start].item()) for p in peaks]
     return sorted(peak_heights, key=lambda x: x[1], reverse=True)[:2]  # top 2 per segment
 
 def build_msg_count():
@@ -89,7 +89,7 @@ def global_peaks(msg_count):
     counts = [msg_count[i] for i in range(max_sec + 1)]
     derivative = np.diff(counts, prepend=0)
     peaks, _ = find_peaks(derivative, height=7)
-    peak_heights = [(p, derivative[p]) for p in peaks]
+    peak_heights = [(p, derivative[p].item()) for p in peaks]
     return sorted(peak_heights, key=lambda x: x[1], reverse=True)[:5]  # top 5 global
 
 def hybrid_analyze_chat():
@@ -201,7 +201,7 @@ def clip_hype_moments(windows, twitch_url):
     print("✅ All clips downloaded.")
     current_progress["message"] = "All clips downloaded successfully."
 
-def get_clips(twitch_url: str, start_time="00:00:00", end_time="00:00:30"):
+def get_clips(twitch_url: str, start_time="00:00:00", end_time="00:00:30", project_id: str | None = None):
     if not os.path.exists("clips"):
         os.makedirs("clips")
         

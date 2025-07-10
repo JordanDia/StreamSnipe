@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 
 const SignIn = () => {
@@ -9,6 +9,9 @@ const SignIn = () => {
     const [error, setError] = useState('')
     const { signIn } = useAuth()
     const navigate = useNavigate()
+    const location = useLocation();
+    const params = new URLSearchParams(location.search);
+    const redirectTo = params.get('redirectTo') || '/dashboard';
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -20,7 +23,7 @@ const SignIn = () => {
             if (error) {
                 setError(error.message)
             } else {
-                navigate('/')
+                navigate(redirectTo)
             }
         } catch (err) {
             setError('An unexpected error occurred')

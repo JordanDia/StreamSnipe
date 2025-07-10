@@ -12,31 +12,36 @@ import Dashboard from './pages/Dashboard';
 import Pricing from './pages/Pricing';
 import ClipDetail from './pages/ClipDetail';
 import VodWorkflow from './pages/VodWorkflow';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 function App() {
     const location = useLocation();
     const isLandingPage = location.pathname === '/';
 
     return (
-        <AuthProvider>
-            <div className="min-h-screen bg-black">
-                {isLandingPage && <Navbar />}
-                <main className={isLandingPage ? 'pt-16' : 'pt-0'}>
-                    <Routes>
-                        <Route path="/" element={<HeroSection />} />
-                        <Route path="/link" element={<LinkClipper />} />
-                        <Route path="/clips" element={<Clips />} />
-                        <Route path="/channel/:username" element={<Dashboard />} />
-                        <Route path="/workflow" element={<Dashboard />} />
-                        <Route path="/signin" element={<SignIn />} />
-                        <Route path="/signup" element={<SignUp />} />
-                        <Route path="/dashboard" element={<Dashboard />} />
-                        <Route path="/pricing" element={<Pricing />} />
-                        <Route path="/clip/:clipId" element={<ClipDetail />} />
-                    </Routes>
-                </main>
-            </div>
-        </AuthProvider>
+        <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+                <div className="min-h-screen bg-background-dark">
+                    {isLandingPage && <Navbar />}
+                    <main className={isLandingPage ? 'pt-16' : 'pt-0'}>
+                        <Routes>
+                            <Route path="/" element={<HeroSection />} />
+                            <Route path="/link" element={<LinkClipper />} />
+                            <Route path="/clips" element={<Clips />} />
+                            <Route path="/channel/:username" element={<Dashboard />} />
+                            <Route path="/workflow" element={<Dashboard />} />
+                            <Route path="/signin" element={<SignIn />} />
+                            <Route path="/signup" element={<SignUp />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/pricing" element={<Pricing />} />
+                            <Route path="/clip/:clipId" element={<ClipDetail />} />
+                        </Routes>
+                    </main>
+                </div>
+            </AuthProvider>
+        </QueryClientProvider>
     );
 }
 

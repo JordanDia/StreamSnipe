@@ -1,6 +1,12 @@
-import React from 'react';
-import { InformationCircleIcon, ArrowUpTrayIcon, LinkIcon } from '@heroicons/react/24/outline';
+import React, { useState } from 'react';
+import {
+    InformationCircleIcon,
+    ArrowUpTrayIcon,
+    LinkIcon,
+    ArrowPathIcon,
+} from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
+// Removed useLoading import
 
 const features = [
     {
@@ -23,10 +29,53 @@ const features = [
 ];
 
 export const MainContent = () => {
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-    
-    const handleSearch = (username: string) => {
-      navigate(`/channel/${username}`);
+
+    const handleSearch = async (input: string) => {
+        setLoading(true);
+        // Regex to detect a Twitch VOD link
+        const vodRegex = /twitch\.tv\/videos\/(\d+)/;
+        const match = input.match(vodRegex);
+
+        if (match) {
+            // It's a VOD link, extract the VOD ID
+            const vodId = match[1];
+
+            // Fetch VOD data from your backend or Twitch API
+            try {
+                const response = await fetch(
+                    `http://localhost:8000/api/get-vod-info?vod_id=${vodId}`
+                );
+                if (!response.ok) throw new Error('Failed to fetch VOD data');
+                const vodData = await response.json();
+
+                // Validate required fields
+                if (
+                    vodData &&
+                    vodData.url &&
+                    vodData.thumbnail_url &&
+                    vodData.duration &&
+                    vodData.title
+                ) {
+                    navigate('/workflow', { state: { vodData } });
+                    setLoading(false);
+                } else {
+                    alert(
+                        'VOD data is incomplete. Please check the link or try again.'
+                    );
+                    setLoading(false);
+                }
+            } catch (err) {
+                alert('Could not fetch VOD info. Please check the link.');
+                setLoading(false);
+            }
+        } else {
+            
+            // Assume it's a channel name
+            navigate(`/channel/${input}`);
+            setLoading(false);
+        }
     };
 
     return (
@@ -41,10 +90,16 @@ export const MainContent = () => {
                 {/* Search card */}
                 <div className="bg-zinc-900 rounded-xl p-6 mt-20 mb-8">
                     <div className="flex items-center gap-3 p-3 bg-black rounded-lg mb-4">
-                        <LinkIcon className="w-5 h-5 text-zinc-400" />
+                        {!loading &&
+                            <LinkIcon className="w-5 h-5 text-zinc-400" />
+                        }
+
+                        {loading &&
+                            <ArrowPathIcon className="w-5 h-5 text-zinc-400 animate-spin" />
+                        }
                         <input
                             type="text"
-                            placeholder="Drop a Twitch link"
+                            placeholder="Drop a Channel name or Twitch link"
                             className="bg-transparent text-white flex-1 outline-none"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {

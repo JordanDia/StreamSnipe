@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
 interface UserData {
     id: string;
@@ -29,33 +30,22 @@ const Channel = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Fetch channel info and VODs in parallel
-                const [channelRes, vodsRes] = await Promise.all([
-                    fetch(
-                        `http://localhost:8000/api/get-channel-info?username=${username}`
-                    ),
-                    fetch(
-                        `http://localhost:8000/api/get-channel-vods?username=${username}`
-                    ),
-                ]);
+                // Use the optimized combined endpoint
+                const response = await fetch(
+                    `http://localhost:8000/api/get-channel-data?username=${username}`
+                );
 
-                if (!channelRes.ok)
+                if (!response.ok)
                     throw new Error(
-                        `Channel API error: ${channelRes.status} ${channelRes.statusText}`
-                    );
-                if (!vodsRes.ok)
-                    throw new Error(
-                        `VODs API error: ${vodsRes.status} ${vodsRes.statusText}`
+                        `API error: ${response.status} ${response.statusText}`
                     );
 
-                const channelJson = await channelRes.json();
-                const vodsJson = await vodsRes.json();
+                const data = await response.json();
 
-                if (channelJson.error) throw new Error(channelJson.error);
-                if (vodsJson.error) throw new Error(vodsJson.error);
+                if (data.error) throw new Error(data.error);
 
-                setUserData(channelJson.user);
-                setVods(vodsJson.vods);
+                setUserData(data.user);
+                setVods(data.vods);
                 setLoading(false);
             } catch (err: unknown) {
                 console.error(err);
@@ -110,7 +100,7 @@ const Channel = () => {
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                <ArrowPathIcon className="w-5 h-5 text-zinc-400 animate-spin" />
             </div>
         );
     }
@@ -144,9 +134,7 @@ const Channel = () => {
                             alt={`${userData.display_name}'s profile`}
                             className="w-20 h-20 rounded-full object-cover"
                         />
-                        <div className="absolute bottom-0 left-0 bg-red-600 text-white text-xs px-2 py-0.5 rounded">
-                            LIVE
-                        </div>
+                        
                     </div>
                     <div className="ml-4 flex flex-col justify-center transform -translate-y-1">
                         <div className="flex items-center mb-2">
@@ -171,6 +159,7 @@ const Channel = () => {
                     </div>
                 </div>
             </div>
+
 
             {/* Video Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-8">
